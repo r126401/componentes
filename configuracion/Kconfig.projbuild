@@ -1,0 +1,71 @@
+menu "Configuracion General"
+
+config CLAVE_CONFIGURACION_GENERAL
+	string "Clave nvs para configuracion general"
+	default "general"
+	help
+		Clave nvs para extraer la configuracion general
+
+config CLAVE_PROGRAMACION
+	string "Clave nvs para cargar la programacion de los dispositivos"
+	default "programacion"
+	help
+		Clave nvs para cargar la programacion de los dispositivos
+
+config CLAVE_PROGRAMA_ESTATICO
+	string "Clave nvs para cargar el programa activo cuando arrancas de 0"
+	default "programa_estatico_real"
+	help
+		Clave nvs para cargar el programa activo cuando arrancas de 0
+
+config BROKER_DEFECTO
+	string "Broker Mqtt"
+	default "mqtt://jajicaiot.ddns.net"
+	help
+		Servidor Mqtt
+		
+config PUERTO_DEFECTO
+	int "Puerto Mqtt"
+	default 1883
+	help
+		Puerto Mqtt
+		
+config USUARIO_BROKER_DEFECTO
+	string "Usuario broker"
+	default ""
+	help
+		Usuario de acceso al servidor Mqtt
+
+config PASSWORD_BROKER_DEFECTO
+	string "Password broker"
+	default ""
+	help
+		Password de acceso al servidor Mqtt
+
+config MQTT_TLS
+        int "habilita conexion segura"
+        default 0
+        help
+            Habilita conexion segura para el servidor mqtt.
+	
+config PREFIJO_SUSCRIPCION_DEFECTO
+	string "prefijo para los topics usados"
+	default "/"
+	help
+		Los topics de suscripcion y publicacion tendran este prefijo
+
+	
+config NAMESPACE
+	string "Espacio de nombre configuracion"
+	default "CONF_DISP"
+	help
+		Espacio de nombres nvs usado para la configuracion general.
+		
+config TAMANO_BUFFER_LECTURA
+	int "Tamano del buffer de lectura"
+	default 1024
+	help
+		Es el tamano de buffer para leer datos en nvs y enviarlos por mqtt
+
+
+endmenu

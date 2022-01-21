@@ -1,0 +1,10 @@
+menu "Configuracion DS18B20"
+
+
+config GPIO_PIN_DS18B20
+	int "Pin gpio del sensor DS18B20"
+	default 2
+	help 
+		Indica el pin gpio que se usa para el sensor
+
+endmenu

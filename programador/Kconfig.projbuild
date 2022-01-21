@@ -1,0 +1,15 @@
+menu "Configuracion ntp"
+
+config TIMEOUT_NTP
+	int "tiempo espera peticion ntp"
+	default 5000
+	help
+		Es el tiempo de espera a que el servidor ntp responda
+
+config SERVIDOR_NTP
+	string "Servidor ntp"
+	default "pool.ntp.org"
+	help
+		Es el servidor ntp usado en la aplicacion.
+
+endmenu

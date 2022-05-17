@@ -263,208 +263,8 @@ bool esActivoElPrograma(TIME_PROGRAM *listaProgramas, int nElementos, int indice
 }
 
 
-bool buscarprogramaActivo(uint8_t nProgramacion, uint8_t *nProgramaCandidato, NTP_CLOCK *clock, TIME_PROGRAM *programacion, int *actual) {
 
 
-	int i;
-    int programaActivo = -1;
-    ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> nProgramas: %d\n", INFOTRAZA, nProgramacion);
-
-    if(nProgramacion == 0) {
-        *actual = -1;
-        *nProgramaCandidato = -1;
-        ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> (1) nProgramas: %d\n", INFOTRAZA, nProgramacion);
-        return false;
-    }
-
-
-    if (nProgramacion == 1) {
-        //Si la fecha actual es menor que la programada. A futuro...
-        if((clock->time < programacion->programa)) {
-            if (esActivoElPrograma(programacion, nProgramacion, 0)) {
-                programaActivo = 0;
-                *actual = -1;
-                nProgramaCandidato = 0;
-                ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> a futuro (2), actual: %d, futuro: %d\n ", INFOTRAZA, *actual, *nProgramaCandidato);
-                return false;
-            } else {
-                *actual = -1;
-                *nProgramaCandidato = -1;
-                ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> (3), actual: %d, futuro: %d\n ", INFOTRAZA, *actual, *nProgramaCandidato);
-
-                return false;
-            }
-            // Un solo elemento a pasado. Aun no se ha activado porque no ha llegado la fecha
-        } else {
-            if (esActivoElPrograma(programacion, nProgramacion, 0)) {
-                programaActivo = 0;
-                *actual = 0;
-                *nProgramaCandidato = 0;
-                ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> a pasado (4), actual: %d, futuro: %d\n ", INFOTRAZA, *actual, *nProgramaCandidato);
-
-                return true;
-
-            } else {
-                *actual = -1;
-                *nProgramaCandidato = -1;
-                ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> (5), actual: %d, futuro: %d\n ", INFOTRAZA, *actual, *nProgramaCandidato);
-
-                return false;
-            }
-        }
-    }
-
-    // Si encontramos un programa en el medio, el actual apunta al programa activo mas cercano
-    // y el futuro al siguiente
-    for (i=0;nProgramacion;i++) {
-        ESP_LOGI(TAG,"buscarProgramas-> bucle: %d\n", i);
-        if (esActivoElPrograma(&programacion[i], nProgramacion, i) == true) {
-            programaActivo = i;
-            ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> programaActivo vale: %d\n", INFOTRAZA, programaActivo);
-            if (clock->time < programacion[i].programa) {
-                //*actual = programaActivo;
-                *nProgramaCandidato = programaActivo;
-                // Si es el ultimo programa activo, lo dejamos hasta que llegue el siguiente del dia siguiente
-                if (programaActivo == 0) {
-                    *actual = nProgramacion - 1;
-                } else {
-                    *actual = calcularProgramaActivoActual(programacion, nProgramacion, i-1);
-
-                }
-                ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> (6), actual: %d, futuro: %d\n ", INFOTRAZA, *actual, *nProgramaCandidato);
-
-                return true;
-            }
-        }
-    }
-    i--;
-    // Si estamos aqui es porque no se ha encontrado ningun programa a futuro.
-    ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> no se ha encontrado ningun programa a futuro: progActivo vale:%d, i vale %d\n", INFOTRAZA, programaActivo, i);
-    if (esActivoElPrograma(&programacion[i], nProgramacion, i) == true) {
-        //Si el ultimo programa fuera activo, el futuro apunta al primero
-        if (programaActivo == i) {
-            *actual = programaActivo;
-            *nProgramaCandidato = 0;
-            ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> (7), actual: %d, futuro: %d\n ", INFOTRAZA, *actual, *nProgramaCandidato);
-            return true;
-        } else {
-            *actual = programaActivo;
-            *nProgramaCandidato = *actual + 1;
-            ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> (8), actual: %d, futuro: %d\n ", INFOTRAZA, *actual, *nProgramaCandidato);
-
-            return true;
-        }
-    } else {
-        *actual = programaActivo;
-        *nProgramaCandidato = *actual + 1;
-        ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> (8), actual: %d, futuro: %d\n ", INFOTRAZA, *actual, *nProgramaCandidato);
-        return true;
-    }
-
-}
-
-
-bool buscarPrograma(DATOS_APLICACION *datosApp, int *actual) {
-    
-
-    int i=0;
-    int programaActivo = -1;
-    printf("buscarPrograma-->inicio\n");
-    printf("buscarPrograma--> nProgramas: %d\n", datosApp->datosGenerales->nProgramacion);
-    
-    if(datosApp->datosGenerales->nProgramacion == 0) {
-        *actual = -1;
-        datosApp->datosGenerales->nProgramaCandidato = -1;
-        printf("buscarPrograma--> (1) nProgramas: %d\n", datosApp->datosGenerales->nProgramacion);
-        return false;
-    }
-    
-    
-    if (datosApp->datosGenerales->nProgramacion == 1) {
-        //Si la fecha actual es menor que la programada. A futuro...
-        if((datosApp->datosGenerales->clock.time < datosApp->datosGenerales->programacion[i].programa)) {
-            if (esActivoElPrograma(&datosApp->datosGenerales->programacion[i], datosApp->datosGenerales->nProgramacion, 0)) {
-                programaActivo = 0;
-                *actual = -1;
-                datosApp->datosGenerales->nProgramaCandidato = 0;
-                printf("buscarPrograma--> a futuro (2), actual: %d, futuro: %d\n ", *actual, datosApp->datosGenerales->nProgramaCandidato);
-                return false;
-            } else {
-                *actual = -1;
-                datosApp->datosGenerales->nProgramaCandidato = -1;
-                printf("buscarPrograma--> (3), actual: %d, futuro: %d\n ", *actual, datosApp->datosGenerales->nProgramaCandidato);
-                
-                return false;
-            }
-            // Un solo elemento a pasado. Aun no se ha activado porque no ha llegado la fecha
-        } else {
-            if (esActivoElPrograma(&(datosApp->datosGenerales->programacion[i]), datosApp->datosGenerales->nProgramacion, 0)) {
-                programaActivo = 0;
-                *actual = 0;
-                datosApp->datosGenerales->nProgramaCandidato = 0;
-                printf("buscarPrograma--> a pasado (4), actual: %d, futuro: %d\n ", *actual, datosApp->datosGenerales->nProgramaCandidato);
-                
-                return true;
-                
-            } else {
-                *actual = -1;
-                datosApp->datosGenerales->nProgramaCandidato = -1;
-                printf("buscarPrograma--> (5), actual: %d, futuro: %d\n ", *actual, datosApp->datosGenerales->nProgramaCandidato);
-                
-                return false;
-            }
-        }
-    }
-    
-    // Si encontramos un programa en el medio, el actual apunta al programa activo mas cercano
-    // y el futuro al siguiente
-    for (i=0;i<datosApp->datosGenerales->nProgramacion;i++) {
-        printf("buscarProgramas-> bucle: %d\n", i);
-        if (esActivoElPrograma(&(datosApp->datosGenerales->programacion[i]), datosApp->datosGenerales->nProgramacion, i) == true) {
-            programaActivo = i;
-            printf("buscarPrograma--> programaActivo vale: %d\n", programaActivo);
-            if (datosApp->datosGenerales->clock.time < datosApp->datosGenerales->programacion[i].programa) {
-                //*actual = programaActivo;
-                datosApp->datosGenerales->nProgramaCandidato = programaActivo;
-                // Si es el ultimo programa activo, lo dejamos hasta que llegue el siguiente del dia siguiente
-                if (programaActivo == 0) {
-                    *actual = datosApp->datosGenerales->nProgramacion - 1;
-                } else {
-                    *actual = calcularProgramaActivoActual(datosApp->datosGenerales->programacion, datosApp->datosGenerales->nProgramacion, i-1);
-
-                }
-                printf("buscarPrograma--> (6), actual: %d, futuro: %d\n ", *actual, datosApp->datosGenerales->nProgramaCandidato);
-
-                return true;
-            }
-        }
-    }
-    i--;
-    // Si estamos aqui es porque no se ha encontrado ningun programa a futuro.
-    printf("buscarPrograma--> no se ha encontrado ningun programa a futuro: progActivo vale:%d, i vale %d\n", programaActivo, i);
-    if (esActivoElPrograma(&(datosApp->datosGenerales->programacion[i]), datosApp->datosGenerales->nProgramacion, i) == true) {
-        //Si el ultimo programa fuera activo, el futuro apunta al primero
-        if (programaActivo == i) {
-            *actual = programaActivo;
-            datosApp->datosGenerales->nProgramaCandidato = 0;
-            printf("buscarPrograma--> (7), actual: %d, futuro: %d\n ", *actual, datosApp->datosGenerales->nProgramaCandidato);
-            return true;
-        } else {
-            *actual = programaActivo;
-            datosApp->datosGenerales->nProgramaCandidato = *actual + 1;
-            printf("buscarPrograma--> (8), actual: %d, futuro: %d\n ", *actual, datosApp->datosGenerales->nProgramaCandidato);
-            
-            return true;
-        }
-    } else {
-        *actual = programaActivo;
-        datosApp->datosGenerales->nProgramaCandidato = *actual + 1;
-        printf("buscarPrograma--> (8), actual: %d, futuro: %d\n ", *actual, datosApp->datosGenerales->nProgramaCandidato);
-        return true;
-    }
-   
-
-}
 
 
 void visualizartiempo(struct tm tiempo) {
@@ -794,15 +594,20 @@ esp_err_t buscar_programa(TIME_PROGRAM *programas, int elementos, int *programa_
 		ESP_LOGI(TAG, ""TRAZAR"PASAMOS POR EL ELEMENTO %d", INFOTRAZA, elementos);
 		if((hora_actual >= programas[elementos].programa) &&
 				(programas[elementos].estadoPrograma == ACTIVO)){
-			ESP_LOGI(TAG, ""TRAZAR"Puntero asignado al indice %d. Hora actual: %ld >=  %ld", INFOTRAZA, elementos, hora.time, programas[elementos].programa);
-			*programa_actual = elementos;
-			break;
+			if((programas[elementos].programa + programas[elementos].duracion ) > hora_actual) {
+				ESP_LOGI(TAG, ""TRAZAR"Puntero asignado al indice %d. Hora actual: %ld >=  %ld", INFOTRAZA, elementos, hora.time, programas[elementos].programa);
+				*programa_actual = elementos;
+				break;
+			}
+
 		}
 
 	} while (elementos >= 0);
 
 	// Si todos los elementos son ha pasado, calculamos el temporizador hasta las 00 horas del dia siguiente
 	// para ordenar la lista y buscar el nuevo temporizador restante.
+
+	ESP_LOGW(TAG, ""TRAZAR"PROGRAMA ACTUAL VALE %d", INFOTRAZA, *programa_actual);
 
 	if(numero_programas == elementos) {
 		tm_dia_siguiente.tm_mday++;
@@ -833,6 +638,7 @@ esp_err_t calcular_programa_activo(DATOS_APLICACION *datosApp, time_t *t_siguien
 	esp_err_t error;
 
 	ESP_LOGI(TAG, ""TRAZAR"CALCULAR_PROGRAMA_ACTIVO...", INFOTRAZA);
+	datosApp->datosGenerales->nProgramaCandidato = -1;
 	ordenarListaProgramas(datosApp->datosGenerales->programacion, datosApp->datosGenerales->nProgramacion, datosApp->datosGenerales->clock.date);
 	error = buscar_programa(datosApp->datosGenerales->programacion,
 			datosApp->datosGenerales->nProgramacion,
@@ -843,7 +649,7 @@ esp_err_t calcular_programa_activo(DATOS_APLICACION *datosApp, time_t *t_siguien
 	if (error == ESP_OK) {
 		ESP_LOGI(TAG, ""TRAZAR"El elemento seleccionado es %d", INFOTRAZA, datosApp->datosGenerales->nProgramaCandidato);
 		visualizartiempo(datosApp->datosGenerales->programacion[datosApp->datosGenerales->nProgramaCandidato].programacion);
-		actualizar_programa_real(datosApp);
+		//actualizar_programa_real(datosApp);
 		activacion_programa(datosApp);
 
 	} else {
@@ -1011,3 +817,203 @@ esp_err_t parar_gestion_programacion(DATOS_APLICACION *datosApp) {
 	ets_timer_disarm(&temporizador);
 	return ESP_OK;
 }
+
+
+/*
+bool buscarprogramaActivo(uint8_t nProgramacion, uint8_t *nProgramaCandidato, NTP_CLOCK *clock, TIME_PROGRAM *programacion, int *actual) {
+
+
+	int i;
+    int programaActivo = -1;
+    ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> nProgramas: %d\n", INFOTRAZA, nProgramacion);
+
+    if(nProgramacion == 0) {
+        *actual = -1;
+        *nProgramaCandidato = -1;
+        ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> (1) nProgramas: %d\n", INFOTRAZA, nProgramacion);
+        return false;
+    }
+
+
+    if (nProgramacion == 1) {
+        if((clock->time < programacion->programa)) {
+            if (esActivoElPrograma(programacion, nProgramacion, 0)) {
+                programaActivo = 0;
+                *actual = -1;
+                nProgramaCandidato = 0;
+                ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> a futuro (2), actual: %d, futuro: %d\n ", INFOTRAZA, *actual, *nProgramaCandidato);
+                return false;
+            } else {
+                *actual = -1;
+                *nProgramaCandidato = -1;
+                ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> (3), actual: %d, futuro: %d\n ", INFOTRAZA, *actual, *nProgramaCandidato);
+
+                return false;
+            }
+        } else {
+            if (esActivoElPrograma(programacion, nProgramacion, 0)) {
+                programaActivo = 0;
+                *actual = 0;
+                *nProgramaCandidato = 0;
+                ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> a pasado (4), actual: %d, futuro: %d\n ", INFOTRAZA, *actual, *nProgramaCandidato);
+
+                return true;
+
+            } else {
+                *actual = -1;
+                *nProgramaCandidato = -1;
+                ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> (5), actual: %d, futuro: %d\n ", INFOTRAZA, *actual, *nProgramaCandidato);
+
+                return false;
+            }
+        }
+    }
+
+
+    for (i=0;nProgramacion;i++) {
+        ESP_LOGI(TAG,"buscarProgramas-> bucle: %d\n", i);
+        if (esActivoElPrograma(&programacion[i], nProgramacion, i) == true) {
+            programaActivo = i;
+            ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> programaActivo vale: %d\n", INFOTRAZA, programaActivo);
+            if (clock->time < programacion[i].programa) {
+
+                *nProgramaCandidato = programaActivo;
+
+                if (programaActivo == 0) {
+                    *actual = nProgramacion - 1;
+                } else {
+                    *actual = calcularProgramaActivoActual(programacion, nProgramacion, i-1);
+
+                }
+                ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> (6), actual: %d, futuro: %d\n ", INFOTRAZA, *actual, *nProgramaCandidato);
+
+                return true;
+            }
+        }
+    }
+    i--;
+
+    ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> no se ha encontrado ningun programa a futuro: progActivo vale:%d, i vale %d\n", INFOTRAZA, programaActivo, i);
+    if (esActivoElPrograma(&programacion[i], nProgramacion, i) == true) {
+        if (programaActivo == i) {
+            *actual = programaActivo;
+            *nProgramaCandidato = 0;
+            ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> (7), actual: %d, futuro: %d\n ", INFOTRAZA, *actual, *nProgramaCandidato);
+            return true;
+        } else {
+            *actual = programaActivo;
+            *nProgramaCandidato = *actual + 1;
+            ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> (8), actual: %d, futuro: %d\n ", INFOTRAZA, *actual, *nProgramaCandidato);
+
+            return true;
+        }
+    } else {
+        *actual = programaActivo;
+        *nProgramaCandidato = *actual + 1;
+        ESP_LOGI(TAG, ""TRAZAR"buscarPrograma--> (8), actual: %d, futuro: %d\n ", INFOTRAZA, *actual, *nProgramaCandidato);
+        return true;
+    }
+
+}
+*/
+/*
+bool buscarPrograma(DATOS_APLICACION *datosApp, int *actual) {
+
+
+    int i=0;
+    int programaActivo = -1;
+    printf("buscarPrograma-->inicio\n");
+    printf("buscarPrograma--> nProgramas: %d\n", datosApp->datosGenerales->nProgramacion);
+
+    if(datosApp->datosGenerales->nProgramacion == 0) {
+        *actual = -1;
+        datosApp->datosGenerales->nProgramaCandidato = -1;
+        printf("buscarPrograma--> (1) nProgramas: %d\n", datosApp->datosGenerales->nProgramacion);
+        return false;
+    }
+
+
+    if (datosApp->datosGenerales->nProgramacion == 1) {
+
+        if((datosApp->datosGenerales->clock.time < datosApp->datosGenerales->programacion[i].programa)) {
+            if (esActivoElPrograma(&datosApp->datosGenerales->programacion[i], datosApp->datosGenerales->nProgramacion, 0)) {
+                programaActivo = 0;
+                *actual = -1;
+                datosApp->datosGenerales->nProgramaCandidato = 0;
+                printf("buscarPrograma--> a futuro (2), actual: %d, futuro: %d\n ", *actual, datosApp->datosGenerales->nProgramaCandidato);
+                return false;
+            } else {
+                *actual = -1;
+                datosApp->datosGenerales->nProgramaCandidato = -1;
+                printf("buscarPrograma--> (3), actual: %d, futuro: %d\n ", *actual, datosApp->datosGenerales->nProgramaCandidato);
+
+                return false;
+            }
+
+        } else {
+            if (esActivoElPrograma(&(datosApp->datosGenerales->programacion[i]), datosApp->datosGenerales->nProgramacion, 0)) {
+                programaActivo = 0;
+                *actual = 0;
+                datosApp->datosGenerales->nProgramaCandidato = 0;
+                printf("buscarPrograma--> a pasado (4), actual: %d, futuro: %d\n ", *actual, datosApp->datosGenerales->nProgramaCandidato);
+
+                return true;
+
+            } else {
+                *actual = -1;
+                datosApp->datosGenerales->nProgramaCandidato = -1;
+                printf("buscarPrograma--> (5), actual: %d, futuro: %d\n ", *actual, datosApp->datosGenerales->nProgramaCandidato);
+
+                return false;
+            }
+        }
+    }
+
+
+    for (i=0;i<datosApp->datosGenerales->nProgramacion;i++) {
+        printf("buscarProgramas-> bucle: %d\n", i);
+        if (esActivoElPrograma(&(datosApp->datosGenerales->programacion[i]), datosApp->datosGenerales->nProgramacion, i) == true) {
+            programaActivo = i;
+            printf("buscarPrograma--> programaActivo vale: %d\n", programaActivo);
+            if (datosApp->datosGenerales->clock.time < datosApp->datosGenerales->programacion[i].programa) {
+                datosApp->datosGenerales->nProgramaCandidato = programaActivo;
+                if (programaActivo == 0) {
+                    *actual = datosApp->datosGenerales->nProgramacion - 1;
+                } else {
+                    *actual = calcularProgramaActivoActual(datosApp->datosGenerales->programacion, datosApp->datosGenerales->nProgramacion, i-1);
+
+                }
+                printf("buscarPrograma--> (6), actual: %d, futuro: %d\n ", *actual, datosApp->datosGenerales->nProgramaCandidato);
+
+                return true;
+            }
+        }
+    }
+    i--;
+
+    printf("buscarPrograma--> no se ha encontrado ningun programa a futuro: progActivo vale:%d, i vale %d\n", programaActivo, i);
+    if (esActivoElPrograma(&(datosApp->datosGenerales->programacion[i]), datosApp->datosGenerales->nProgramacion, i) == true) {
+
+        if (programaActivo == i) {
+            *actual = programaActivo;
+            datosApp->datosGenerales->nProgramaCandidato = 0;
+            printf("buscarPrograma--> (7), actual: %d, futuro: %d\n ", *actual, datosApp->datosGenerales->nProgramaCandidato);
+            return true;
+        } else {
+            *actual = programaActivo;
+            datosApp->datosGenerales->nProgramaCandidato = *actual + 1;
+            printf("buscarPrograma--> (8), actual: %d, futuro: %d\n ", *actual, datosApp->datosGenerales->nProgramaCandidato);
+
+            return true;
+        }
+    } else {
+        *actual = programaActivo;
+        datosApp->datosGenerales->nProgramaCandidato = *actual + 1;
+        printf("buscarPrograma--> (8), actual: %d, futuro: %d\n ", *actual, datosApp->datosGenerales->nProgramaCandidato);
+        return true;
+    }
+
+
+}
+*/
+

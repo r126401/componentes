@@ -434,11 +434,17 @@ esp_err_t   escribir_programa_actual(DATOS_APLICACION *datosApp, cJSON *respuest
 
 
 
-	if (datosApp->datosGenerales->nProgramacion > 0) {
-	    cJSON_AddStringToObject(respuesta, CURRENT_PROGRAM_ID, datosApp->datosGenerales->programacion[datosApp->datosGenerales->nProgramaCandidato].idPrograma);
+	if (datosApp->datosGenerales->nProgramacion > 0){
+		if (datosApp->datosGenerales->nProgramaCandidato >= 0) {
+			cJSON_AddStringToObject(respuesta, CURRENT_PROGRAM_ID, datosApp->datosGenerales->programacion[datosApp->datosGenerales->nProgramaCandidato].idPrograma);
+			ESP_LOGW(TAG, ""TRAZAR" programa candidato vale ok %d", INFOTRAZA, datosApp->datosGenerales->nProgramaCandidato);
+		} else {
+			ESP_LOGW(TAG, ""TRAZAR" programa candidato vale %d", INFOTRAZA, datosApp->datosGenerales->nProgramaCandidato);
+		}
+
 
 	} else {
-		ESP_LOGW(TAG, ""TRAZAR"NO SE PUEDE ESCRIBIR EL PROGRAMA ACTUAL PORQUE NO HAY PROGRAMAS REGISTRADOS", INFOTRAZA);
+		ESP_LOGW(TAG, ""TRAZAR"NO SE PUEDE ESCRIBIR EL PROGRAMA ACTUAL PORQUE NO HAY PROGRAMAS REGISTRADOS O EL PROGRAMA VALE %d", INFOTRAZA, datosApp->datosGenerales->nProgramaCandidato );
 	}
 
     return ESP_OK;

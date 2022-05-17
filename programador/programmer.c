@@ -19,6 +19,9 @@ static ETSTimer timerDuracion;
 static const char *TAG = "PROGRAMADOR";
 static ETSTimer temporizador_duracion;
 
+#define TEMPORIZADOR_MAXIMO_EN_SEGUNDOS 428
+//#define TEMPORIZADOR_MAXIMO_EN_SEGUNDOS 30
+
 
 
 //#define uint8_t uint8_t_t
@@ -688,7 +691,7 @@ void chequear_ejecucion_programa(NTP_CLOCK *clock, TIME_PROGRAM *programs) {
 
 }
 
-
+/*
 void accionTemporizada(DATOS_APLICACION *datosApp) {
 
     int tiempo;
@@ -737,6 +740,7 @@ void accionTemporizada(DATOS_APLICACION *datosApp) {
         }
     }
 }
+*/
 /*
 int ajustarProgramacion(TIME_PROGRAM *programacion, uint8_t *nProgramacion, NTP_CLOCK *clock) {
 
@@ -941,6 +945,13 @@ esp_err_t actualizar_programa_real(DATOS_APLICACION *datosApp) {
 	return ESP_OK;
 }
 
+void temporizacion_intermedia(DATOS_APLICACION *datosApp) {
+
+	ESP_LOGW(TAG, ""TRAZAR"EJECUTANDO TEMPORIZADOR DE TEMPORIZACION INTERMEDIA", INFOTRAZA);
+	activacion_programa(datosApp);
+}
+
+
 esp_err_t activacion_programa(DATOS_APLICACION *datosApp) {
 
 	uint8_t indice;
@@ -954,18 +965,26 @@ esp_err_t activacion_programa(DATOS_APLICACION *datosApp) {
 	duracion = programa_actual.duracion;
 	hora = datosApp->datosGenerales->clock.time;
 
+	tiempo_restante = (programa_actual.programa + duracion) - hora;
 	if (duracion > 0) {
-		tiempo_restante = (programa_actual.programa + duracion) - hora;
+
+		if (tiempo_restante > TEMPORIZADOR_MAXIMO_EN_SEGUNDOS ) {
+			ESP_LOGW(TAG, ""TRAZAR"ACTIVADO TEMPORIZADOR DE TEMPORIZACION INTERMEDIA.  QUEDAN %d repeticiones", INFOTRAZA, tiempo_restante/TEMPORIZADOR_MAXIMO_EN_SEGUNDOS);
+			ets_timer_disarm(&temporizador_duracion);
+			ets_timer_setfn(&temporizador_duracion, (ETSTimerFunc*) temporizacion_intermedia, datosApp);
+			ets_timer_arm(&temporizador_duracion, (TEMPORIZADOR_MAXIMO_EN_SEGUNDOS * 1000), false);
+		} else {
+			ets_timer_disarm(&temporizador_duracion);
+						ets_timer_setfn(&temporizador_duracion, (ETSTimerFunc*) appuser_ejecucion_accion_temporizada, datosApp);
+						ets_timer_arm(&temporizador_duracion, (tiempo_restante * 1000), false);
+						ESP_LOGI(TAG, ""TRAZAR"ACTIVADO TEMPORIZADOR DE %d SEGUNDOS", INFOTRAZA, tiempo_restante);
+		}
+
+
 		if (tiempo_restante <= 0 ) {
 			ESP_LOGW(TAG, ""TRAZAR"LA DURACION YA HA EXCEDIDO DE LA HORA Y NO SE ACTIVA", INFOTRAZA);
 			appuser_ejecucion_accion_temporizada(datosApp);
 			return PROGRAMACION_DURACION_EXCEDIDA;
-		} else {
-			ets_timer_disarm(&temporizador_duracion);
-			ets_timer_setfn(&temporizador_duracion, (ETSTimerFunc*) appuser_ejecucion_accion_temporizada, datosApp);
-			ets_timer_arm(&temporizador_duracion, (tiempo_restante * 1000), false);
-			ESP_LOGI(TAG, ""TRAZAR"ACTIVADO TEMPORIZADOR DE %d SEGUNDOS", INFOTRAZA, tiempo_restante);
-
 		}
 	}
 

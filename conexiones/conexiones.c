@@ -48,7 +48,7 @@ static EventGroupHandle_t grupo_eventos;
 static const char *TAG = "CONEXIONES";
 extern DATOS_APLICACION datosApp;
 
-
+/*
 void extraer_datos_mqtt(void * event_data, wifi_config_t *wifi_config) {
 
 	char* ptr;
@@ -96,23 +96,38 @@ void extraer_datos_mqtt(void * event_data, wifi_config_t *wifi_config) {
 
 
 }
+*/
+void extraer_datos_smartconfig(void * event_data, wifi_config_t *wifi_config) {
+
+
+
+	 smartconfig_event_got_ssid_pswd_t *evt = (smartconfig_event_got_ssid_pswd_t *)event_data;
+	 bzero(wifi_config, sizeof(wifi_config_t));
+	 memcpy(wifi_config->sta.password, evt->password, sizeof(wifi_config->sta.password));
+	 memcpy(wifi_config->sta.ssid, evt->ssid, sizeof(wifi_config->sta.ssid));
+
+
+}
+
+
 
 
 void volcar_datos_conexion(void * event_data){
+
     smartconfig_event_got_ssid_pswd_t* evt = (smartconfig_event_got_ssid_pswd_t*)event_data;
     wifi_config_t wifi_config;
-   // uint8_t ssid[33] = { 0 };
-   // uint8_t password[65] = { 0 };
+
 
     bzero(&wifi_config, sizeof(wifi_config_t));
     memcpy(wifi_config.sta.ssid, evt->ssid, sizeof(wifi_config.sta.ssid));
 
-    ESP_LOGI(TAG, ""TRAZAR" vamos a estraer los datos de conexion", INFOTRAZA);
-    extraer_datos_mqtt(event_data, &wifi_config);
-    ESP_LOGI(TAG, ""TRAZAR" SSID: %s, PASS:%s, BROKER: %s, PUERTO: %d", INFOTRAZA,
-    		wifi_config.sta.ssid, wifi_config.sta.password,
-			datosApp.datosGenerales->parametrosMqtt.broker,
-			datosApp.datosGenerales->parametrosMqtt.port);
+    ESP_LOGI(TAG, ""TRAZAR" vamos a extraer los datos de conexion", INFOTRAZA);
+    //extraer_datos_mqtt(event_data, &wifi_config);
+    extraer_datos_smartconfig(event_data, &wifi_config);
+
+    ESP_LOGI(TAG, ""TRAZAR" SSID: %s, PASS:%s", INFOTRAZA,
+    		wifi_config.sta.ssid, wifi_config.sta.password);
+
 
     wifi_config.sta.bssid_set = evt->bssid_set;
 
@@ -126,6 +141,7 @@ void volcar_datos_conexion(void * event_data){
 
 
 }
+
 
 
 

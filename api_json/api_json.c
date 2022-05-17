@@ -390,6 +390,7 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
      cJSON_AddStringToObject(respuesta, MQTT_PUBLISH, datosApp->datosGenerales->parametrosMqtt.publish);
      cJSON_AddStringToObject(respuesta, MQTT_SUBSCRIBE, datosApp->datosGenerales->parametrosMqtt.subscribe);
      cJSON_AddNumberToObject(respuesta, FREE_MEMORY, esp_get_free_heap_size());
+     cJSON_AddNumberToObject(respuesta, "uptime", esp_timer_get_time());
      //cJSON_AddNumberToObject(respuesta, UPTIME, uptime);
      codigoRespuesta(respuesta, RESP_OK);
      printf("AppJsonComun--> vamos a imprimir\n");

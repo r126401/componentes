@@ -577,7 +577,8 @@ esp_err_t buscar_programa(TIME_PROGRAM *programas, int elementos, int *programa_
 	int numero_programas;
 	struct tm tm_dia_siguiente;
 	tm_dia_siguiente = hora.date;
-	numero_programas = elementos -1;
+	numero_programas = 0;
+	int i;
 
 
 
@@ -589,11 +590,27 @@ esp_err_t buscar_programa(TIME_PROGRAM *programas, int elementos, int *programa_
 		return PROGRAMACION_NO_EXISTE;
 	}
 
+	ESP_LOGW(TAG, ""TRAZAR"PASAMOS POR EL ELEMENTO" , INFOTRAZA);
+	for (i=(elementos - 1);i>-1;i--) {
+		numero_programas++;
+		ESP_LOGW(TAG, ""TRAZAR"PASAMOS POR EL ELEMENTO %d", INFOTRAZA, i);
+		if((hora_actual >= programas[i].programa) &&
+				(programas[i].estadoPrograma == ACTIVO)){
+			ESP_LOGE(TAG, ""TRAZAR"Puntero asignado al indice %d. Hora actual: %ld >=  %ld", INFOTRAZA, i, hora.time, programas[i].programa);
+			*programa_actual = i;
+			break;
+
+		} else {
+			ESP_LOGW(TAG, ""TRAZAR"elemento %d no es seleccionado, se pasa al siguiente", INFOTRAZA, i);
+		}
+	}
+/*
 	do {
 		elementos--;
 		ESP_LOGI(TAG, ""TRAZAR"PASAMOS POR EL ELEMENTO %d", INFOTRAZA, elementos);
 		if((hora_actual >= programas[elementos].programa) &&
 				(programas[elementos].estadoPrograma == ACTIVO)){
+			ESP_LOGI(TAG, ""TRAZAR"ELEMENTO ENCONTRADO. VEMOS SI SUPERA LA DURACION", INFOTRAZA);
 			if((programas[elementos].programa + programas[elementos].duracion ) > hora_actual) {
 				ESP_LOGI(TAG, ""TRAZAR"Puntero asignado al indice %d. Hora actual: %ld >=  %ld", INFOTRAZA, elementos, hora.time, programas[elementos].programa);
 				*programa_actual = elementos;
@@ -603,23 +620,27 @@ esp_err_t buscar_programa(TIME_PROGRAM *programas, int elementos, int *programa_
 		}
 
 	} while (elementos >= 0);
+	*/
 
 	// Si todos los elementos son ha pasado, calculamos el temporizador hasta las 00 horas del dia siguiente
 	// para ordenar la lista y buscar el nuevo temporizador restante.
 
-	ESP_LOGW(TAG, ""TRAZAR"PROGRAMA ACTUAL VALE %d", INFOTRAZA, *programa_actual);
+	ESP_LOGW(TAG, ""TRAZAR"PROGRAMA ACTUAL VALE %d y el numero de programas es %d", INFOTRAZA, *programa_actual, numero_programas);
 
-	if(numero_programas == elementos) {
+
+	if(i == numero_programas) {
 		tm_dia_siguiente.tm_mday++;
 		tm_dia_siguiente.tm_hour = 0;
 		tm_dia_siguiente.tm_min = 0;
 		tm_dia_siguiente.tm_sec = 0;
 		*t_tiempo_siguiente = mktime(&tm_dia_siguiente);
+		ESP_LOGW(TAG, ""TRAZAR" EL PROXIMO INTERVALO ES %ld", INFOTRAZA, *t_tiempo_siguiente);
 
 
 	} else {
 
-		*t_tiempo_siguiente = programas[elementos+1].programa;
+		*t_tiempo_siguiente = programas[i+1].programa;
+
 
 
 
@@ -627,7 +648,7 @@ esp_err_t buscar_programa(TIME_PROGRAM *programas, int elementos, int *programa_
 
 
 
-	ESP_LOGI(TAG, ""TRAZAR"programa activo: %d, tiempo del siguiente programa: %ld", INFOTRAZA, elementos, *t_tiempo_siguiente);
+	ESP_LOGI(TAG, ""TRAZAR"programa activo: %d, tiempo del siguiente programa: %ld", INFOTRAZA, i, *t_tiempo_siguiente);
 
 
 	return ESP_OK;
@@ -699,7 +720,7 @@ void gestion_programas(DATOS_APLICACION *datosApp) {
 			}
 
 		} else {
-			//ESP_LOGI(TAG, ""TRAZAR"HORA: %ld. siguiente intervalo: %ld, diff: %ld", datosApp->datosGenerales->clock.time, t_siguiente_intervalo, (t_siguiente_intervalo - datosApp->datosGenerales->clock.time ));
+			ESP_LOGI(TAG, ""TRAZAR"HORA: %ld. siguiente intervalo: %ld, diff: %ld", INFOTRAZA, datosApp->datosGenerales->clock.time, t_siguiente_intervalo, (t_siguiente_intervalo - datosApp->datosGenerales->clock.time ));
 
 		}
 

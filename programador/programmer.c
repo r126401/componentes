@@ -720,6 +720,18 @@ void gestion_programas(DATOS_APLICACION *datosApp) {
 		ESP_LOGI(TAG, ""TRAZAR" EN ESPERA DE FIN DE ARRANQUE", INFOTRAZA);
 		break;
 
+	case NORMAL_FIN_PROGRAMA_ACTIVO:
+		if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == ESP_OK) {
+					ESP_LOGI(TAG, ""TRAZAR"FIN DE PROGRAMA REALIZADO", INFOTRAZA);
+					//datosApp->datosGenerales->estadoApp = NORMAL_AUTO;
+					appuser_cambiar_modo_aplicacion(datosApp, NORMAL_AUTO);
+				} else {
+					ESP_LOGE(TAG, ""TRAZAR"ERROR AL AJUSTAR LOS PROGRAMAS", INFOTRAZA);
+
+				}
+
+		break;
+
 	default:
 		break;
 	}

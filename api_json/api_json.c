@@ -432,12 +432,23 @@ esp_err_t   visualizar_programas(struct DATOS_APLICACION *datosApp, cJSON *respu
 
 esp_err_t   escribir_programa_actual(DATOS_APLICACION *datosApp, cJSON *respuesta) {
 
+	NTP_CLOCK hora;
+	actualizar_hora(&hora);
+	time_t hora_actual = hora.time;
+	TIME_PROGRAM *schedule;
+	int indice;
 
 
+	schedule = datosApp->datosGenerales->programacion;
+	indice = datosApp->datosGenerales->nProgramaCandidato;
 	if (datosApp->datosGenerales->nProgramacion > 0){
 		if (datosApp->datosGenerales->nProgramaCandidato >= 0) {
-			cJSON_AddStringToObject(respuesta, CURRENT_PROGRAM_ID, datosApp->datosGenerales->programacion[datosApp->datosGenerales->nProgramaCandidato].idPrograma);
-			ESP_LOGW(TAG, ""TRAZAR" programa candidato vale ok %d", INFOTRAZA, datosApp->datosGenerales->nProgramaCandidato);
+			if ((schedule[indice].programa + schedule[indice].duracion) < hora_actual) {
+				ESP_LOGE(TAG, ""TRAZAR" no se pinta el programa actual ya que excedio la duracion del programa", INFOTRAZA);
+			} else {
+				cJSON_AddStringToObject(respuesta, CURRENT_PROGRAM_ID, datosApp->datosGenerales->programacion[datosApp->datosGenerales->nProgramaCandidato].idPrograma);
+				ESP_LOGW(TAG, ""TRAZAR" programa candidato vale ok %d", INFOTRAZA, datosApp->datosGenerales->nProgramaCandidato);
+			}
 		} else {
 			ESP_LOGW(TAG, ""TRAZAR" programa candidato vale %d", INFOTRAZA, datosApp->datosGenerales->nProgramaCandidato);
 		}

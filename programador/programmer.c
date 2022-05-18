@@ -634,7 +634,7 @@ esp_err_t buscar_programa(TIME_PROGRAM *programas, int elementos, int *programa_
 		tm_dia_siguiente.tm_min = 0;
 		tm_dia_siguiente.tm_sec = 0;
 		*t_tiempo_siguiente = mktime(&tm_dia_siguiente);
-		ESP_LOGW(TAG, ""TRAZAR" EL PROXIMO INTERVALO ES %ld", INFOTRAZA, *t_tiempo_siguiente);
+		ESP_LOGW(TAG, ""TRAZAR" EL PROXIMO INTERVALO ES %ld y se corresponde con la media noche", INFOTRAZA, *t_tiempo_siguiente);
 
 
 	} else {
@@ -720,7 +720,7 @@ void gestion_programas(DATOS_APLICACION *datosApp) {
 			}
 
 		} else {
-			ESP_LOGI(TAG, ""TRAZAR"HORA: %ld. siguiente intervalo: %ld, diff: %ld", INFOTRAZA, datosApp->datosGenerales->clock.time, t_siguiente_intervalo, (t_siguiente_intervalo - datosApp->datosGenerales->clock.time ));
+			//ESP_LOGI(TAG, ""TRAZAR"HORA: %ld. siguiente intervalo: %ld, diff: %ld", INFOTRAZA, datosApp->datosGenerales->clock.time, t_siguiente_intervalo, (t_siguiente_intervalo - datosApp->datosGenerales->clock.time ));
 
 		}
 

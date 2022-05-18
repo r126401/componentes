@@ -709,7 +709,7 @@ esp_err_t   modificar_programa(cJSON *peticion,struct DATOS_APLICACION *datosApp
         cJSON_AddStringToObject(respuesta, NEW_PROGRAM_ID, datosApp->datosGenerales->programacion[nPrograma].idPrograma);
         cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
         cJSON_AddNumberToObject(respuesta, PROGRAM_STATE, datosApp->datosGenerales->programacion[nPrograma].estadoPrograma);
-        cJSON_AddNumberToObject(respuesta, PROGRAM_ACTION, datosApp->datosGenerales->programacion[nPrograma].accion);
+        //cJSON_AddNumberToObject(respuesta, PROGRAM_ACTION, datosApp->datosGenerales->programacion[nPrograma].accion);
         appuser_visualizar_dato_programa(&datosApp->datosGenerales->programacion[nPrograma], respuesta);
 
         //datosApp->datosGenerales->estadoApp = NORMAL_SINCRONIZANDO;

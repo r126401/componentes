@@ -787,11 +787,13 @@ esp_err_t actualizar_programa_real(DATOS_APLICACION *datosApp) {
 void temporizacion_intermedia(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGW(TAG, ""TRAZAR"EJECUTANDO TEMPORIZADOR DE TEMPORIZACION INTERMEDIA", INFOTRAZA);
-	activacion_programa(datosApp);
+	logica_temporizacion(datosApp);
+	//activacion_programa(datosApp);
 }
 
 
-esp_err_t activacion_programa(DATOS_APLICACION *datosApp) {
+
+esp_err_t logica_temporizacion(DATOS_APLICACION *datosApp) {
 
 	uint8_t indice;
 	TIME_PROGRAM programa_actual;
@@ -803,9 +805,10 @@ esp_err_t activacion_programa(DATOS_APLICACION *datosApp) {
 	programa_actual = datosApp->datosGenerales->programacion[indice];
 	duracion = programa_actual.duracion;
 	hora = datosApp->datosGenerales->clock.time;
-
 	tiempo_restante = (programa_actual.programa + duracion) - hora;
 	if (duracion > 0) {
+
+
 
 		if (tiempo_restante > TEMPORIZADOR_MAXIMO_EN_SEGUNDOS ) {
 			ESP_LOGW(TAG, ""TRAZAR"ACTIVADO TEMPORIZADOR DE TEMPORIZACION INTERMEDIA.  QUEDAN %d repeticiones", INFOTRAZA, tiempo_restante/TEMPORIZADOR_MAXIMO_EN_SEGUNDOS);
@@ -826,8 +829,25 @@ esp_err_t activacion_programa(DATOS_APLICACION *datosApp) {
 			return PROGRAMACION_DURACION_EXCEDIDA;
 		}
 	}
+	return ESP_OK;
+}
 
+
+
+
+
+esp_err_t activacion_programa(DATOS_APLICACION *datosApp) {
+
+	uint8_t indice;
+	TIME_PROGRAM programa_actual;
+	int duracion;
+	int tiempo_restante;
+	time_t hora;
+
+
+	logica_temporizacion(datosApp);
 	appuser_temporizador_cumplido(datosApp);
+
 
 
 	return ESP_OK;

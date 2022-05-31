@@ -260,5 +260,7 @@ esp_err_t activacion_programa(DATOS_APLICACION *datosApp);
 esp_err_t iniciar_gestion_programacion(DATOS_APLICACION *datosApp);
 //int ajustarProgramacion(TIME_PROGRAM *programacion, uint8_t *nProgramacion, NTP_CLOCK *clock);
 esp_err_t parar_gestion_programacion(DATOS_APLICACION *datosApp);
+void temporizacion_intermedia(DATOS_APLICACION *datosApp);
+esp_err_t logica_temporizacion(DATOS_APLICACION *datosApp);
 #endif /* PROGRAMMER_H */
 

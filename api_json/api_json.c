@@ -748,11 +748,9 @@ esp_err_t   ejecutar_reset(DATOS_APLICACION *datosApp, cJSON *respuesta) {
     temporizador.name = "restart";
     esp_timer_create(&temporizador, &tiempo);
     esp_timer_start_once(tiempo, 3000000);
-
-    //os_timer_disarm(&restart);
-    //os_timer_setfn(&restart, (os_timer_func_t*) restart_normal, NULL);
-    //os_timer_arm(&restart, DELAY_TIME_RESET, 0);
-    codigoRespuesta(respuesta, RESP_OK);
+    if (respuesta != NULL) {
+    	codigoRespuesta(respuesta, RESP_OK);
+    }
 
 
     return ESP_OK;
@@ -790,9 +788,14 @@ esp_err_t   upgrade_ota(cJSON *peticion, struct DATOS_APLICACION *datosApp, cJSO
 
    if (datosApp->datosGenerales->estadoApp != UPGRADE_EN_PROGRESO) {
 	   codigoRespuesta(respuesta, RESP_OK);
-	   appuser_acciones_ota(datosApp);
-	   //parar_gestion_programacion(datosApp);
-	   tarea_upgrade_firmware(datosApp);
+	   if (appuser_acciones_ota(datosApp) == RESP_RESTART) {
+		   ejecutar_reset(datosApp, NULL);
+
+	   }else {
+		   //parar_gestion_programacion(datosApp);
+		   tarea_upgrade_firmware(datosApp);
+	   }
+
 
    } else {
 	   codigoRespuesta(respuesta, RESP_NOK);

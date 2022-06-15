@@ -542,6 +542,7 @@ esp_err_t ota_a_json(DATOS_APLICACION *datosApp) {
 		ESP_LOGI(TAG, ""TRAZAR" UPGRADE FIRMWARE PREPARADO %s", INFOTRAZA, texto);
 		//error = escribir_dato_string_nvs(&datosApp->handle, "UPGRADE_FIRMWARE", texto);
 		error = guardar_configuracion(datosApp, "UPGRADE", texto);
+		error = guardar_configuracion(datosApp, "FIN_UPGRADE", "FIN_UPGRADE");
 		if (error != ESP_OK) {
 			ESP_LOGE(TAG, ""TRAZAR" UPGRADE FIRMWARE ERROR %d", INFOTRAZA, error);
 			return error;

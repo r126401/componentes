@@ -21,6 +21,8 @@
 #include "api_json.h"
 #include "esp_tls.h"
 #include "conexiones_mqtt.h"
+#include "configuracion.h"
+#include "dialogos_json.h"
 
 
 
@@ -112,6 +114,7 @@ void otaesp_task(void *pvParameter)
 	char*ip;
 	char url[120];
 	const esp_app_desc_t *aplicacion;
+	cJSON *upgrade;
 	aplicacion = esp_ota_get_app_description();
 	ESP_LOGW(TAG, ""TRAZAR"Comienzo upgrade firmware", INFOTRAZA);
     ip = name_to_ip(datosApp->datosGenerales->ota.server);
@@ -159,12 +162,20 @@ void otaesp_task(void *pvParameter)
     if (ret == ESP_OK) {
     	if (datosApp->datosGenerales->parametrosMqtt.tls == true) {
     	}
+    	upgrade = cJSON_CreateObject();
+    	cJSON_AddNumberToObject(upgrade, FIN_UPGRADE, 1);
+		guardar_configuracion(datosApp, FIN_UPGRADE, cJSON_Print(upgrade));
     	notificar_evento_ota(datosApp, OTA_UPGRADE_FINALIZADO);
         esp_restart();
     } else {
         ESP_LOGE(TAG, "Firmware upgrade failed, error: %d", ret);
         ESP_LOGE(TAG, ""TRAZAR" memoria error %d", INFOTRAZA,esp_get_free_heap_size ());
+        upgrade = cJSON_CreateObject();
+    	cJSON_AddNumberToObject(upgrade, FIN_UPGRADE, 0);
+		guardar_configuracion(datosApp, FIN_UPGRADE, cJSON_Print(upgrade));
         notificar_evento_ota(datosApp, OTA_ERROR);
+        esp_restart();
+
     }
 
     vTaskDelete(NULL);

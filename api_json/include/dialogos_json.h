@@ -90,6 +90,7 @@ Proyecto realizado por Emilio Jimenez Prieto
 #define OTA_URL             "otaUrl"
 #define OTA_FILE            "otaFile"
 #define OTA_SW_VERSION      "otaVersion"
+#define FIN_UPGRADE			"finUpgrade"
 #define ID_DEVICE           "idDevice"
 
 #define APP_COMAND_RELE                 "rele"

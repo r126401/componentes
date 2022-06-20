@@ -15,7 +15,7 @@
 #include "errores_proyecto.h"
 #include "interfaz_usuario.h"
 
-static ETSTimer timerDuracion;
+//static ETSTimer timerDuracion;
 static const char *TAG = "PROGRAMADOR";
 static ETSTimer temporizador_duracion;
 
@@ -151,8 +151,10 @@ esp_err_t ordenarListaProgramas(TIME_PROGRAM *listaProgramas, int nElementos, st
                 listaProgramas[i].programacion.tm_wday = clock.tm_wday;
                 if (calcularMascara(clock.tm_wday, listaProgramas[i].mascara) == true) {
                     listaProgramas[i].activo = 1;
+                    ESP_LOGW(TAG, ""TRAZAR" PROGRAMA CON MASCARA ACTIVA", INFOTRAZA);
                 } else {
                     listaProgramas[i].activo = 0;
+                    ESP_LOGW(TAG, ""TRAZAR" PROGRAMA CON MASCARA INACTIVA", INFOTRAZA);
                 }
                 
                 listaProgramas[i].programacion.tm_yday = clock.tm_yday;
@@ -595,7 +597,7 @@ esp_err_t buscar_programa(TIME_PROGRAM *programas, int elementos, int *programa_
 		numero_programas++;
 		ESP_LOGW(TAG, ""TRAZAR"PASAMOS POR EL ELEMENTO %d", INFOTRAZA, i);
 		if((hora_actual >= programas[i].programa) &&
-				(programas[i].estadoPrograma == ACTIVO)){
+				(programas[i].estadoPrograma == ACTIVO) && (programas[i].activo == ACTIVO)){
 			ESP_LOGE(TAG, ""TRAZAR"Puntero asignado al indice %d. Hora actual: %ld >=  %ld", INFOTRAZA, i, hora.time, programas[i].programa);
 			*programa_actual = i;
 			break;
@@ -649,9 +651,14 @@ esp_err_t buscar_programa(TIME_PROGRAM *programas, int elementos, int *programa_
 
 
 	ESP_LOGI(TAG, ""TRAZAR"programa activo: %d, tiempo del siguiente programa: %ld", INFOTRAZA, i, *t_tiempo_siguiente);
+	if (i < 0) {
+		return -1;
+	} else {
+		return ESP_OK;
+	}
 
 
-	return ESP_OK;
+
 }
 
 esp_err_t calcular_programa_activo(DATOS_APLICACION *datosApp, time_t *t_siguiente_intervalo) {
@@ -675,6 +682,8 @@ esp_err_t calcular_programa_activo(DATOS_APLICACION *datosApp, time_t *t_siguien
 
 	} else {
 		error = PROGRAMACION_NO_EXISTE;
+		ESP_LOGW(TAG, ""TRAZAR"No hay programacion o programa activo en este momento", INFOTRAZA);
+		appUser_ejecutar_accion_programa_defecto(datosApp);
 	}
 
 	return error;
@@ -734,7 +743,7 @@ void gestion_programas(DATOS_APLICACION *datosApp) {
 			ESP_LOGE(TAG, ""TRAZAR"ERROR AL AJUSTAR LOS PROGRAMAS", INFOTRAZA);
 
 		}
-
+		appuser_cambiar_modo_aplicacion(datosApp, NORMAL_AUTO);
 		break;
 
 	case ESPERA_FIN_ARRANQUE:
@@ -838,11 +847,7 @@ esp_err_t logica_temporizacion(DATOS_APLICACION *datosApp) {
 
 esp_err_t activacion_programa(DATOS_APLICACION *datosApp) {
 
-	uint8_t indice;
-	TIME_PROGRAM programa_actual;
-	int duracion;
-	int tiempo_restante;
-	time_t hora;
+
 
 
 	logica_temporizacion(datosApp);

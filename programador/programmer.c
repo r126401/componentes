@@ -734,16 +734,28 @@ void gestion_programas(DATOS_APLICACION *datosApp) {
 		}
 
 		break;
+	case NORMAL_SIN_PROGRAMACION:
+
+		break;
 	case NORMAL_SINCRONIZANDO:
 		if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == ESP_OK) {
 			ESP_LOGI(TAG, ""TRAZAR"AJUSTE DE PROGRAMA REALIZADO", INFOTRAZA);
-			//datosApp->datosGenerales->estadoApp = NORMAL_AUTO;
-			appuser_cambiar_modo_aplicacion(datosApp, NORMAL_AUTO);
+			datosApp->datosGenerales->estadoApp = NORMAL_AUTO;
+			/*
+			if (datosApp->datosGenerales->nProgramacion == 0) {
+				ESP_LOGE(TAG, ""TRAZAR"CAMBIANDO A NORMAL_SIN_PROGRAMACION PORQUE HAY PROBLEMAS", INFOTRAZA);
+				appuser_cambiar_modo_aplicacion(datosApp, NORMAL_SIN_PROGRAMACION);
+			} else {
+				ESP_LOGE(TAG, ""TRAZAR"CAMBIANDO A AUTO PORQUE HAY PROBLEMAS", INFOTRAZA);
+				appuser_cambiar_modo_aplicacion(datosApp, NORMAL_AUTO);
+			}*/
+
 		} else {
 			ESP_LOGE(TAG, ""TRAZAR"ERROR AL AJUSTAR LOS PROGRAMAS", INFOTRAZA);
+			appuser_cambiar_modo_aplicacion(datosApp, NORMAL_SIN_PROGRAMACION);
 
 		}
-		appuser_cambiar_modo_aplicacion(datosApp, NORMAL_AUTO);
+		//appuser_cambiar_modo_aplicacion(datosApp, NORMAL_AUTO);
 		break;
 
 	case ESPERA_FIN_ARRANQUE:

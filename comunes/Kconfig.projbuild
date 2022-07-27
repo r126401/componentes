@@ -1,0 +1,10 @@
+menu "Configuracion de inicializacion"
+
+config CARGA_CONFIGURACION
+	int "Carga de configuracion de fabrica"
+	default 0
+	help
+		0 indica carga desde memoria nvs mientras que 1 indica de fabrica. 
+
+
+endmenu

@@ -443,7 +443,7 @@ esp_err_t   escribir_programa_actual(DATOS_APLICACION *datosApp, cJSON *respuest
 	indice = datosApp->datosGenerales->nProgramaCandidato;
 	if (datosApp->datosGenerales->nProgramacion > 0){
 		if (datosApp->datosGenerales->nProgramaCandidato >= 0) {
-			if ((schedule[indice].programa + schedule[indice].duracion) < hora_actual) {
+			if ((schedule[indice].programa + schedule[indice].duracion) <= hora_actual) {
 				ESP_LOGE(TAG, ""TRAZAR" no se pinta el programa actual ya que excedio la duracion del programa", INFOTRAZA);
 			} else {
 				cJSON_AddStringToObject(respuesta, CURRENT_PROGRAM_ID, datosApp->datosGenerales->programacion[datosApp->datosGenerales->nProgramaCandidato].idPrograma);
@@ -584,7 +584,7 @@ esp_err_t   insertar_nuevo_programa(cJSON *peticion,DATOS_APLICACION *datosApp, 
        cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
        cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
        appuser_cambiar_modo_aplicacion(datosApp, NORMAL_SINCRONIZANDO);
-       //datosApp->datosGenerales->estadoApp = NORMAL_SINCRONIZANDO;
+       datosApp->datosGenerales->estadoApp = NORMAL_SINCRONIZANDO;
        gestion_programas(datosApp);
        escribir_programa_actual(datosApp, respuesta);
        codigoRespuesta(respuesta, RESP_OK);
@@ -712,7 +712,7 @@ esp_err_t   modificar_programa(cJSON *peticion,struct DATOS_APLICACION *datosApp
         cJSON_AddNumberToObject(respuesta, PROGRAM_ACTION, datosApp->datosGenerales->programacion[nPrograma].accion);
         appuser_visualizar_dato_programa(&datosApp->datosGenerales->programacion[nPrograma], respuesta);
 
-        //datosApp->datosGenerales->estadoApp = NORMAL_SINCRONIZANDO;
+        datosApp->datosGenerales->estadoApp = NORMAL_SINCRONIZANDO;
         appuser_cambiar_modo_aplicacion(datosApp, NORMAL_SINCRONIZANDO);
         gestion_programas(datosApp);
         escribir_programa_actual(datosApp, respuesta);

@@ -583,7 +583,7 @@ esp_err_t   insertar_nuevo_programa(cJSON *peticion,DATOS_APLICACION *datosApp, 
        cJSON_AddStringToObject(respuesta, PROGRAM_ID, programaActual->idPrograma);
        cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
        cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
-       appuser_cambiar_modo_aplicacion(datosApp, NORMAL_SINCRONIZANDO);
+       appuser_notify_app_status(datosApp, NORMAL_SINCRONIZANDO);
        datosApp->datosGenerales->estadoApp = NORMAL_SINCRONIZANDO;
        gestion_programas(datosApp);
        escribir_programa_actual(datosApp, respuesta);
@@ -635,14 +635,14 @@ esp_err_t   borrar_programa(cJSON *peticion,struct DATOS_APLICACION *datosApp, c
        datosApp->datosGenerales->programacion = borrarPrograma(datosApp->datosGenerales->programacion, &datosApp->datosGenerales->nProgramacion, nPrograma);
        if (datosApp->datosGenerales->nProgramacion == 0) {
            //datosApp->datosGenerales->estadoApp = NORMAL_SIN_PROGRAMACION;
-           appuser_cambiar_modo_aplicacion(datosApp, NORMAL_SIN_PROGRAMACION);
+           appuser_notify_app_status(datosApp, NORMAL_SIN_PROGRAMACION);
        }
        cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
        cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
        printf("idprograma borrado:%s\n", idPrograma);
        cJSON_AddStringToObject(respuesta, PROGRAM_ID, idPrograma);
        datosApp->datosGenerales->estadoApp = NORMAL_SINCRONIZANDO;
-       appuser_cambiar_modo_aplicacion(datosApp, NORMAL_SINCRONIZANDO);
+       appuser_notify_app_status(datosApp, NORMAL_SINCRONIZANDO);
        gestion_programas(datosApp);
        escribir_programa_actual(datosApp, respuesta);
        codigoRespuesta(respuesta, RESP_OK);
@@ -713,7 +713,7 @@ esp_err_t   modificar_programa(cJSON *peticion,struct DATOS_APLICACION *datosApp
         appuser_visualizar_dato_programa(&datosApp->datosGenerales->programacion[nPrograma], respuesta);
 
         datosApp->datosGenerales->estadoApp = NORMAL_SINCRONIZANDO;
-        appuser_cambiar_modo_aplicacion(datosApp, NORMAL_SINCRONIZANDO);
+        appuser_notify_app_status(datosApp, NORMAL_SINCRONIZANDO);
         gestion_programas(datosApp);
         escribir_programa_actual(datosApp, respuesta);
         codigoRespuesta(respuesta, RESP_OK);

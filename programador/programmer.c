@@ -578,10 +578,8 @@ esp_err_t buscar_programa(TIME_PROGRAM *programas, int elementos, int *programa_
 	NTP_CLOCK hora;
 	actualizar_hora(&hora);
 	time_t hora_actual = hora.time;
-	int numero_programas;
 	struct tm tm_dia_siguiente;
 	tm_dia_siguiente = hora.date;
-	numero_programas = 0;
 	int i;
 
 
@@ -593,51 +591,51 @@ esp_err_t buscar_programa(TIME_PROGRAM *programas, int elementos, int *programa_
 	}
 
 	ESP_LOGW(TAG, ""TRAZAR"PASAMOS POR EL ELEMENTO" , INFOTRAZA);
+
+	//Bucle hacia atras para encontrar el programa actual
+
 	for (i=(elementos - 1);i>-1;i--) {
-		numero_programas++;
+
 		ESP_LOGW(TAG, ""TRAZAR"PASAMOS POR EL ELEMENTO %d", INFOTRAZA, i);
 		if((hora_actual >= programas[i].programa) &&
 				(programas[i].estadoPrograma == ACTIVO) && (programas[i].activo == ACTIVO)){
-			ESP_LOGE(TAG, ""TRAZAR"Puntero asignado al indice %d. Hora actual: %ld >=  %ld", INFOTRAZA, i, hora.time, programas[i].programa);
-			*programa_actual = i;
-			break;
+
+			ESP_LOGI(TAG, ""TRAZAR"ENCONTRADO SCHEDULE ID %d: %ld", INFOTRAZA, i, programas[i].programa);
+
+			if (i >= 0) {
+				ESP_LOGW(TAG, ""TRAZAR"Puntero asignado al indice %d. Hora actual: %ld >=  %ld", INFOTRAZA, i, hora.time, programas[i].programa);
+				*programa_actual = i;
+				*t_tiempo_siguiente = programas[i+1].programa;
+
+			}
+
+			if(i == elementos - 1) {
+				tm_dia_siguiente.tm_mday++;
+				tm_dia_siguiente.tm_hour = 0;
+				tm_dia_siguiente.tm_min = 0;
+				tm_dia_siguiente.tm_sec = 0;
+				*t_tiempo_siguiente = mktime(&tm_dia_siguiente);
+				ESP_LOGW(TAG, ""TRAZAR" EL PROXIMO INTERVALO ES %ld y se corresponde con la media noche", INFOTRAZA, *t_tiempo_siguiente);
+				*programa_actual = i;
+
+
+			}
+
+
+			ESP_LOGW(TAG, ""TRAZAR"PROGRAMA ACTUAL: %d --- %ld. SIGUIENTE: %ld",
+					INFOTRAZA, *programa_actual,
+					programas[*programa_actual].programa,
+					*t_tiempo_siguiente);
+			return ESP_OK;
 
 		} else {
 			ESP_LOGW(TAG, ""TRAZAR"elemento %d no es seleccionado, se pasa al siguiente", INFOTRAZA, i);
 		}
 	}
 
-	ESP_LOGW(TAG, ""TRAZAR"PROGRAMA ACTUAL VALE %d y el numero de programas es %d", INFOTRAZA, *programa_actual, numero_programas);
-
-
-	if(i == elementos) {
-		tm_dia_siguiente.tm_mday++;
-		tm_dia_siguiente.tm_hour = 0;
-		tm_dia_siguiente.tm_min = 0;
-		tm_dia_siguiente.tm_sec = 0;
-		*t_tiempo_siguiente = mktime(&tm_dia_siguiente);
-		ESP_LOGW(TAG, ""TRAZAR" EL PROXIMO INTERVALO ES %ld y se corresponde con la media noche", INFOTRAZA, *t_tiempo_siguiente);
-		*programa_actual = i;
-
-
-	} else {
-
-		*t_tiempo_siguiente = programas[i+1].programa;
-
-
-
-
-	}
-
-
-
-	ESP_LOGI(TAG, ""TRAZAR"programa activo: %d, tiempo del siguiente programa: %ld", INFOTRAZA, i, *t_tiempo_siguiente);
-	if (i < 0) {
-		return -1;
-	} else {
-		return ESP_OK;
-	}
-
+	*programa_actual = -1;
+	*t_tiempo_siguiente = programas[0].programa;
+	return -1;
 
 
 }
@@ -662,6 +660,7 @@ esp_err_t calcular_programa_activo(DATOS_APLICACION *datosApp, time_t *t_siguien
 	if (error == ESP_OK) {
 		ESP_LOGI(TAG, ""TRAZAR"El elemento seleccionado es %d", INFOTRAZA, datosApp->datosGenerales->nProgramaCandidato);
 		visualizartiempo(datosApp->datosGenerales->programacion[datosApp->datosGenerales->nProgramaCandidato].programacion);
+		ESP_LOGI(TAG, ""TRAZAR"START_SCHEDULE", INFOTRAZA);
 		activacion_programa(datosApp);
 
 	} else {
@@ -727,12 +726,20 @@ void gestion_programas(DATOS_APLICACION *datosApp) {
 
 		} else {
 			ESP_LOGE(TAG, ""TRAZAR"ERROR AL AJUSTAR LOS PROGRAMAS", INFOTRAZA);
-			appuser_cambiar_modo_aplicacion(datosApp, NORMAL_SIN_PROGRAMACION);
+			if (datosApp->datosGenerales->nProgramacion > 0) {
+				datosApp->datosGenerales->estadoApp = NORMAL_AUTO;
+				appuser_notify_app_status(datosApp, NORMAL_AUTO);
+			} else {
+				datosApp->datosGenerales->estadoApp = NORMAL_SIN_PROGRAMACION;
+				appuser_notify_app_status(datosApp, NORMAL_SIN_PROGRAMACION);
+			}
+
 
 		}
 		break;
 
 	case ESPERA_FIN_ARRANQUE:
+		appuser_notify_app_status(datosApp, ESPERA_FIN_ARRANQUE);
 		ESP_LOGI(TAG, ""TRAZAR" EN ESPERA DE FIN DE ARRANQUE", INFOTRAZA);
 		if (datosApp->datosGenerales->nProgramacion == 0) {
 			datosApp->datosGenerales->estadoApp = NORMAL_SIN_PROGRAMACION;
@@ -745,7 +752,7 @@ void gestion_programas(DATOS_APLICACION *datosApp) {
 		if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == ESP_OK) {
 					ESP_LOGI(TAG, ""TRAZAR"FIN DE PROGRAMA REALIZADO", INFOTRAZA);
 					//datosApp->datosGenerales->estadoApp = NORMAL_AUTO;
-					appuser_cambiar_modo_aplicacion(datosApp, NORMAL_AUTO);
+					appuser_notify_app_status(datosApp, NORMAL_AUTO);
 				} else {
 					ESP_LOGE(TAG, ""TRAZAR"ERROR AL AJUSTAR LOS PROGRAMAS", INFOTRAZA);
 
